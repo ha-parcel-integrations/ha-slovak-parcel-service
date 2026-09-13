@@ -1,0 +1,9 @@
+{
+  "name": "Slovak Parcel Service",
+  "content_in_root": false,
+  "zip_release": true,
+  "filename": "slovak_parcel_service.zip",
+  "hide_default_branch": true,
+  "render_readme": true,
+  "homeassistant": "2024.12.0"
+}
