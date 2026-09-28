@@ -2,7 +2,7 @@
   "domain": "slovak_parcel_service",
   "name": "Slovak Parcel Service",
   "codeowners": [
-    "@peternijssen"
+    "@peter-mdf"
   ],
   "config_flow": true,
   "documentation": "https://github.com/ha-parcel-integrations/ha-slovak-parcel-service",
