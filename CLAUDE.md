@@ -49,16 +49,12 @@ repo) — the endpoint, request/response shape, the numeric status vocabulary
 and its `ParcelStatus` derivation, and the timestamp format. Not duplicated
 here; this section is integration-level decisions only.
 
-**`API_KEY` in `const.py` is a shared secret, not a user credential — shipped
-under an explicit maintainer exception to the suite's standing shared-secret
-refusal** (see `carrier-research/slovak-parcel-service/slovak-parcel-service.md`, Log 2026-09-01). It is the fixed
-`Api-Key` value MySPS's own public web bundle sends for every visitor, not
-something a Home Assistant user could obtain themselves. Treat its rotation
-or revocation as a first-class integration failure, never as a reason to fall
-back to scraping the legacy HTML tracker: `api.py` raises a distinct error on
-401 so the coordinator can warn that the approved key may have rotated,
-rather than treating it as a normal auth failure. The key must never appear
-in diagnostics, fixtures, logs or documentation beyond this pointer.
+**`API_KEY` in `const.py` is not a user credential.** Treat a rejection of it
+as a first-class integration failure, never as a reason to fall back to
+scraping the legacy HTML tracker: `api.py` raises a distinct error on 401 so
+the coordinator can warn that the integration needs an update, rather than
+treating it as a normal auth failure. The value must never appear in
+diagnostics, fixtures, logs or documentation.
 
 **`sender`, `weight` and `receiver` are filled from a second MySPS endpoint,
 `getShipmentInfo` — a deliberate exception to "the tracking payload alone
