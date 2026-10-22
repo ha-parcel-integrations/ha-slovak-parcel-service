@@ -57,7 +57,11 @@ No account is needed: add the tracking numbers you want to follow.
 
 1. In HACS, choose the three-dot menu → **Custom repositories**.
 2. Add `https://github.com/ha-parcel-integrations/ha-slovak-parcel-service` as an **Integration**.
-3. Install **Slovak Parcel Service** and restart Home Assistant.
+3. Install **Slovak Parcel Service** and restart Home Assistant if HACS asks you to.
+
+Or click the button below to open it directly in HACS:
+
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=ha-parcel-integrations&repository=ha-slovak-parcel-service&category=integration)
 
 ### Manual
 
@@ -65,7 +69,9 @@ Copy `custom_components/slovak_parcel_service` into your `config/custom_componen
 
 ## Configuration
 
-Add the integration via **Settings → Devices & Services → Add Integration → Slovak Parcel Service**. No account is needed — you're only asked for your delivery postcode, which confirms you're the recipient so a parcel's addressee name can be shown. The postcode identifies the hub, so if you track parcels to more than one address, add the integration again with the other postcode — each becomes its own hub, with its own device and sensors. A postcode can only belong to one hub at a time; to change it, remove the hub and add it again with the new postcode.
+[![Open your Home Assistant instance and start setting up a new integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=slovak_parcel_service)
+
+Or set it up by hand: add the integration via **Settings → Devices & Services → Add Integration → Slovak Parcel Service**. No account is needed — you're only asked for your delivery postcode, which confirms you're the recipient so a parcel's addressee name can be shown. The postcode identifies the hub, so if you track parcels to more than one address, add the integration again with the other postcode — each becomes its own hub, with its own device and sensors. A postcode can only belong to one hub at a time; to change it, remove the hub and add it again with the new postcode.
 
 Then add parcels via the integration's **Configure** dialog, the [`slovak_parcel_service.track_parcel`](#services) service, or a [dashboard button](examples/dashboards/add_parcel_card.yaml). The tracking code is on your shipping confirmation email or the missed-delivery card.
 
