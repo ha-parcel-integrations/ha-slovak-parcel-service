@@ -4,12 +4,13 @@ Fetching and event firing only — the parcel mapping lives in :mod:`.parcels`.
 That split is what lets the account-based variant swap this file out without
 duplicating the mapping code.
 """
+
 from __future__ import annotations
 
 import asyncio
+from datetime import UTC, datetime, timedelta
 import hashlib
 import logging
-from datetime import datetime, timedelta, timezone
 
 import aiohttp
 from homeassistant.config_entries import ConfigEntry
@@ -68,10 +69,9 @@ def _next_anchor(now: datetime) -> datetime:
     )
     if now < six_today:
         return six_today
-    midnight_tomorrow = (now + timedelta(days=1)).replace(
+    return (now + timedelta(days=1)).replace(
         hour=QUIET_WINDOW_START_HOUR, minute=0, second=0, microsecond=0
     )
-    return midnight_tomorrow
 
 
 def _hottest_tier_minutes(active_parcels: list[dict], now: datetime) -> int | None:
@@ -187,9 +187,9 @@ class SlovakParcelServiceCoordinator(DataUpdateCoordinator[list[dict]]):
         # that already existed when the integration started — otherwise every
         # restart would flood users with "registered" notifications.
         self._known_state: dict[str, ParcelStatus] | None = None
-        self._known_delivery_times: (
-            dict[str, tuple[str | None, str | None]] | None
-        ) = None
+        self._known_delivery_times: dict[str, tuple[str | None, str | None]] | None = (
+            None
+        )
         # Cached device id, attached to every fired event so device-trigger
         # automations can filter to this device.
         self._cached_device_id: str | None = None
@@ -233,9 +233,7 @@ class SlovakParcelServiceCoordinator(DataUpdateCoordinator[list[dict]]):
     def _include_history(self) -> bool:
         """Whether the opt-in per-parcel history option is enabled."""
         return bool(
-            self.config_entry.options.get(
-                CONF_INCLUDE_HISTORY, DEFAULT_INCLUDE_HISTORY
-            )
+            self.config_entry.options.get(CONF_INCLUDE_HISTORY, DEFAULT_INCLUDE_HISTORY)
         )
 
     async def _async_update_data(self) -> list[dict]:
@@ -250,7 +248,9 @@ class SlovakParcelServiceCoordinator(DataUpdateCoordinator[list[dict]]):
         }
         postal_code = self.config_entry.options.get(CONF_POSTAL_CODE)
         self._info_cache = {
-            code: info for code, info in self._info_cache.items() if code in tracked_codes
+            code: info
+            for code, info in self._info_cache.items()
+            if code in tracked_codes
         }
         self._delivered_codes &= tracked_codes
 
@@ -269,7 +269,7 @@ class SlovakParcelServiceCoordinator(DataUpdateCoordinator[list[dict]]):
         errors = 0
         retry_afters: list[float] = []
         saw_429 = False
-        for code, result in zip(codes_to_fetch, results):
+        for code, result in zip(codes_to_fetch, results, strict=True):
             if isinstance(result, BaseException):
                 if not isinstance(
                     result, (SlovakParcelServiceApiError, aiohttp.ClientError)
@@ -283,7 +283,9 @@ class SlovakParcelServiceCoordinator(DataUpdateCoordinator[list[dict]]):
                     saw_429 = True
                     if result.retry_after is not None:
                         retry_afters.append(result.retry_after)
-                _LOGGER.warning("Slovak Parcel Service fetch failed for %s: %s", code, result)
+                _LOGGER.warning(
+                    "Slovak Parcel Service fetch failed for %s: %s", code, result
+                )
                 cached = self._raw_cache.get(code)
                 if cached is not None:
                     raws_by_code[code] = cached
@@ -321,7 +323,9 @@ class SlovakParcelServiceCoordinator(DataUpdateCoordinator[list[dict]]):
         # ``None`` this time — the tracking call above remains the primary
         # source. A 429 still feeds the same backoff as the tracking call,
         # since both endpoints share the one rate limit.
-        codes_needing_info = [code for code in fresh_codes if code not in self._info_cache]
+        codes_needing_info = [
+            code for code in fresh_codes if code not in self._info_cache
+        ]
         if codes_needing_info:
             info_results = await asyncio.gather(
                 *(
@@ -332,7 +336,7 @@ class SlovakParcelServiceCoordinator(DataUpdateCoordinator[list[dict]]):
                 ),
                 return_exceptions=True,
             )
-            for code, result in zip(codes_needing_info, info_results):
+            for code, result in zip(codes_needing_info, info_results, strict=True):
                 if isinstance(result, BaseException):
                     if not isinstance(
                         result, (SlovakParcelServiceApiError, aiohttp.ClientError)
@@ -372,7 +376,9 @@ class SlovakParcelServiceCoordinator(DataUpdateCoordinator[list[dict]]):
         self._consecutive_429 = 0
 
         if codes_to_fetch and errors == len(codes_to_fetch) and not raws_by_code:
-            raise UpdateFailed("Slovak Parcel Service unreachable for all tracked parcels")
+            raise UpdateFailed(
+                "Slovak Parcel Service unreachable for all tracked parcels"
+            )
 
         include_history = self._include_history
         entries = [
@@ -392,7 +398,9 @@ class SlovakParcelServiceCoordinator(DataUpdateCoordinator[list[dict]]):
         # flipped to delivered is skipped starting next cycle; one that
         # somehow un-delivers (should not happen, but the fetch list must
         # never permanently drop a code) rejoins it automatically.
-        self._delivered_codes = {code for code, parcel in entries if parcel["delivered"]}
+        self._delivered_codes = {
+            code for code, parcel in entries if parcel["delivered"]
+        }
 
         self.delivered = apply_delivered_filter(
             sort_parcels_by_ts(delivered, "delivered_at", descending=True),
@@ -419,7 +427,7 @@ class SlovakParcelServiceCoordinator(DataUpdateCoordinator[list[dict]]):
         # succeeded (or nothing needed fetching) — a poll served entirely from
         # cache must not present itself as a successful update.
         if not codes_to_fetch or errors < len(codes_to_fetch):
-            self.last_success_time = datetime.now(timezone.utc)
+            self.last_success_time = datetime.now(UTC)
 
         now = dt_util.now()
         self._current_tier_minutes = _hottest_tier_minutes(normalized_active, now)

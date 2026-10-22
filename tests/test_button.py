@@ -1,4 +1,5 @@
 """Tests for the Slovak Parcel Service refresh button."""
+
 from unittest.mock import AsyncMock, MagicMock
 
 from custom_components.slovak_parcel_service.button import (

@@ -7,6 +7,7 @@ synthetic tracking codes): ``shipmentStatus`` is a textual lifecycle label
 ``states[]`` entry carries an integer ``status`` alongside its ``statusCode``
 and a naive, space-separated, Slovak-local-time ``time``.
 """
+
 from __future__ import annotations
 
 ACTIVE_CODE = "SK1234567890"
@@ -90,9 +91,23 @@ def unauthorized_info_sample(code: str = ACTIVE_CODE) -> dict:
             "panel_0": {
                 "name": "panel_0",
                 "fields": {
-                    "shipmentNr": {"name": "shipmentNr", "type": "string", "value": code},
-                    "sender": {"name": "sender", "label": "LBL_SENDER", "type": "string", "value": "Example Sender s.r.o."},
-                    "weight": {"name": "weight", "label": "LBL_WEIGHT", "type": "float", "value": 4.55},
+                    "shipmentNr": {
+                        "name": "shipmentNr",
+                        "type": "string",
+                        "value": code,
+                    },
+                    "sender": {
+                        "name": "sender",
+                        "label": "LBL_SENDER",
+                        "type": "string",
+                        "value": "Example Sender s.r.o.",
+                    },
+                    "weight": {
+                        "name": "weight",
+                        "label": "LBL_WEIGHT",
+                        "type": "float",
+                        "value": 4.55,
+                    },
                 },
             }
         },
@@ -109,9 +124,23 @@ def authorized_info_sample(code: str = ACTIVE_CODE) -> dict:
             "panel_0": {
                 "name": "panel_0",
                 "fields": {
-                    "shipmentNr": {"name": "shipmentNr", "type": "string", "value": code},
-                    "sender": {"name": "sender", "label": "LBL_SENDER", "type": "string", "value": "Example Sender s.r.o."},
-                    "weight": {"name": "weight", "label": "LBL_WEIGHT", "type": "float", "value": 7.7},
+                    "shipmentNr": {
+                        "name": "shipmentNr",
+                        "type": "string",
+                        "value": code,
+                    },
+                    "sender": {
+                        "name": "sender",
+                        "label": "LBL_SENDER",
+                        "type": "string",
+                        "value": "Example Sender s.r.o.",
+                    },
+                    "weight": {
+                        "name": "weight",
+                        "label": "LBL_WEIGHT",
+                        "type": "float",
+                        "value": 7.7,
+                    },
                     "payments": {"name": "payments", "type": "boolean", "value": False},
                     "cod": {"name": "cod", "type": "currency", "value": None},
                 },
@@ -120,17 +149,38 @@ def authorized_info_sample(code: str = ACTIVE_CODE) -> dict:
                 "name": "panel_1",
                 "label": "LBL_RECIPIENT",
                 "fields": {
-                    "recipient": {"name": "recipient", "label": "LBL_RECIPIENT", "type": "string", "value": "Jana Vzorova"},
-                    "recipientPhone": {"name": "recipientPhone", "type": "string", "value": "REDACTED"},
-                    "recipientMail": {"name": "recipientMail", "type": "string", "value": "REDACTED"},
-                    "recipientAddress": {"name": "recipientAddress", "type": "string", "value": "REDACTED"},
+                    "recipient": {
+                        "name": "recipient",
+                        "label": "LBL_RECIPIENT",
+                        "type": "string",
+                        "value": "Jana Vzorova",
+                    },
+                    "recipientPhone": {
+                        "name": "recipientPhone",
+                        "type": "string",
+                        "value": "REDACTED",
+                    },
+                    "recipientMail": {
+                        "name": "recipientMail",
+                        "type": "string",
+                        "value": "REDACTED",
+                    },
+                    "recipientAddress": {
+                        "name": "recipientAddress",
+                        "type": "string",
+                        "value": "REDACTED",
+                    },
                 },
             },
             "panel_2": {
                 "name": "panel_2",
                 "label": "LBL_SENDER",
                 "fields": {
-                    "sender": {"name": "sender", "type": "string", "value": "Example Sender s.r.o."},
+                    "sender": {
+                        "name": "sender",
+                        "type": "string",
+                        "value": "Example Sender s.r.o.",
+                    },
                     "ref1": {"name": "ref1", "type": "string", "value": "REDACTED"},
                 },
             },

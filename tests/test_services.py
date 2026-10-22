@@ -1,8 +1,9 @@
 """Tests for the Slovak Parcel Service services (track_parcel / untrack_parcel)."""
+
 from unittest.mock import AsyncMock, patch
 
-import pytest
 from homeassistant.exceptions import ServiceValidationError
+import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.slovak_parcel_service.api import SlovakParcelServiceApiClient
@@ -73,9 +74,7 @@ async def test_track_parcel_normalizes_code(hass):
         )
         await hass.async_block_till_done()
 
-    assert entry.options[CONF_PARCELS] == [
-        {CONF_TRACKING_CODE: "EXAMPLE999999"}
-    ]
+    assert entry.options[CONF_PARCELS] == [{CONF_TRACKING_CODE: "EXAMPLE999999"}]
 
 
 async def test_track_parcel_accepts_any_non_empty_code(hass):
@@ -114,9 +113,7 @@ async def test_track_parcel_duplicate_is_noop(hass):
 
 
 async def test_untrack_parcel_removes_from_options(hass):
-    entry = await _setup(
-        hass, parcels=[{CONF_TRACKING_CODE: "EXAMPLE999999"}]
-    )
+    entry = await _setup(hass, parcels=[{CONF_TRACKING_CODE: "EXAMPLE999999"}])
     with _mock_api():
         await hass.services.async_call(
             DOMAIN,
@@ -130,9 +127,7 @@ async def test_untrack_parcel_removes_from_options(hass):
 
 
 async def test_untrack_unknown_code_is_noop(hass):
-    entry = await _setup(
-        hass, parcels=[{CONF_TRACKING_CODE: "EXAMPLE999999"}]
-    )
+    entry = await _setup(hass, parcels=[{CONF_TRACKING_CODE: "EXAMPLE999999"}])
     with _mock_api():
         await hass.services.async_call(
             DOMAIN,

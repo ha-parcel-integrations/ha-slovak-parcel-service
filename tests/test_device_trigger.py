@@ -1,4 +1,5 @@
 """Tests for Slovak Parcel Service device triggers."""
+
 from unittest.mock import AsyncMock
 
 from homeassistant.const import CONF_DEVICE_ID, CONF_DOMAIN, CONF_PLATFORM, CONF_TYPE

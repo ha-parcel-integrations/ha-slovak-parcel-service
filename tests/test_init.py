@@ -1,4 +1,5 @@
 """Tests for Slovak Parcel Service setup and unload."""
+
 from unittest.mock import AsyncMock, patch
 
 from homeassistant.config_entries import ConfigEntryState
@@ -15,8 +16,7 @@ from custom_components.slovak_parcel_service.const import (
     DOMAIN,
 )
 
-from .payloads import ACTIVE_CODE
-from .payloads import active_sample as _sample
+from .payloads import ACTIVE_CODE, active_sample as _sample
 
 OTHER_CODE = "SK2222222222"
 
@@ -39,10 +39,13 @@ async def test_setup_and_unload(hass):
     )
     entry.add_to_hass(hass)
 
-    with patch(
-        "custom_components.slovak_parcel_service.api.SlovakParcelServiceApiClient.async_get_parcel",
-        new=AsyncMock(return_value=_sample()),
-    ), _no_info_patch():
+    with (
+        patch(
+            "custom_components.slovak_parcel_service.api.SlovakParcelServiceApiClient.async_get_parcel",
+            new=AsyncMock(return_value=_sample()),
+        ),
+        _no_info_patch(),
+    ):
         assert await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
 
@@ -78,10 +81,13 @@ async def test_services_survive_unload_while_another_hub_stays_loaded(hass):
     )
     home.add_to_hass(hass)
 
-    with patch(
-        "custom_components.slovak_parcel_service.api.SlovakParcelServiceApiClient.async_get_parcel",
-        new=AsyncMock(return_value=None),
-    ), _no_info_patch():
+    with (
+        patch(
+            "custom_components.slovak_parcel_service.api.SlovakParcelServiceApiClient.async_get_parcel",
+            new=AsyncMock(return_value=None),
+        ),
+        _no_info_patch(),
+    ):
         # Added and set up one at a time — adding both before the first
         # setup would let HA's own first-ever-setup-of-this-domain bulk
         # path load both together, which is not what this test means to
@@ -124,7 +130,9 @@ async def test_setup_retries_when_first_refresh_fails(hass):
 
     with patch(
         "custom_components.slovak_parcel_service.api.SlovakParcelServiceApiClient.async_get_parcel",
-        new=AsyncMock(side_effect=SlovakParcelServiceApiError("Slovak Parcel Service unreachable")),
+        new=AsyncMock(
+            side_effect=SlovakParcelServiceApiError("Slovak Parcel Service unreachable")
+        ),
     ):
         assert not await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
@@ -141,10 +149,13 @@ async def test_per_parcel_sensor_spawn_and_remove(hass):
     entry.add_to_hass(hass)
 
     mock = AsyncMock(return_value=_sample())
-    with patch(
-        "custom_components.slovak_parcel_service.api.SlovakParcelServiceApiClient.async_get_parcel",
-        new=mock,
-    ), _no_info_patch():
+    with (
+        patch(
+            "custom_components.slovak_parcel_service.api.SlovakParcelServiceApiClient.async_get_parcel",
+            new=mock,
+        ),
+        _no_info_patch(),
+    ):
         assert await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
 
@@ -184,10 +195,13 @@ async def test_two_hubs_get_distinct_devices_and_entities(hass):
     )
     home.add_to_hass(hass)
 
-    with patch(
-        "custom_components.slovak_parcel_service.api.SlovakParcelServiceApiClient.async_get_parcel",
-        new=AsyncMock(side_effect=lambda code: _sample(code)),
-    ), _no_info_patch():
+    with (
+        patch(
+            "custom_components.slovak_parcel_service.api.SlovakParcelServiceApiClient.async_get_parcel",
+            new=AsyncMock(side_effect=lambda code: _sample(code)),
+        ),
+        _no_info_patch(),
+    ):
         # Added and set up one at a time — see the comment in
         # test_services_survive_unload_while_another_hub_stays_loaded.
         assert await hass.config_entries.async_setup(home.entry_id)
@@ -209,7 +223,10 @@ async def test_two_hubs_get_distinct_devices_and_entities(hass):
     assert home_entity is not None
     assert work_entity is not None
     assert home_entity != work_entity
-    assert registry.entities[home_entity].device_id != registry.entities[work_entity].device_id
+    assert (
+        registry.entities[home_entity].device_id
+        != registry.entities[work_entity].device_id
+    )
 
 
 async def test_options_update_applies_live_without_reload(hass):
@@ -222,10 +239,13 @@ async def test_options_update_applies_live_without_reload(hass):
     entry.add_to_hass(hass)
 
     mock = AsyncMock(return_value=_sample())
-    with patch(
-        "custom_components.slovak_parcel_service.api.SlovakParcelServiceApiClient.async_get_parcel",
-        new=mock,
-    ), _no_info_patch():
+    with (
+        patch(
+            "custom_components.slovak_parcel_service.api.SlovakParcelServiceApiClient.async_get_parcel",
+            new=mock,
+        ),
+        _no_info_patch(),
+    ):
         assert await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
 

@@ -4,7 +4,8 @@ These need no Home Assistant instance — the whole point of keeping
 ``parcels.py`` free of I/O is that the carrier-specific mapping (the part you
 rewrite per carrier) can be tested as plain functions.
 """
-from datetime import datetime, timedelta, timezone
+
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -74,7 +75,7 @@ def test_unmapped_shipment_status_warns_only_once(caplog):
 
 
 @pytest.mark.parametrize(
-    "status_code,expected",
+    ("status_code", "expected"),
     [
         ("DDEF", ParcelStatus.REGISTERED),
         ("INIT", ParcelStatus.REGISTERED),
@@ -92,14 +93,15 @@ def test_map_event_status_prefers_status_code_over_numeric():
     present but would disagree (which never happens on real data, but proves
     the lookup order)."""
     assert (
-        map_event_status({"statusCode": "DELY", "status": 30})
-        == ParcelStatus.DELIVERED
+        map_event_status({"statusCode": "DELY", "status": 30}) == ParcelStatus.DELIVERED
     )
 
 
 def test_map_event_status_falls_back_to_numeric_code():
     """A missing/unrecognised statusCode falls back to the numeric code."""
-    assert map_event_status({"statusCode": None, "status": 40}) == ParcelStatus.DELIVERED
+    assert (
+        map_event_status({"statusCode": None, "status": 40}) == ParcelStatus.DELIVERED
+    )
     assert map_event_status({"status": 8}) == ParcelStatus.REGISTERED
 
 
@@ -143,7 +145,7 @@ def test_unmapped_event_status_warns_only_once(caplog):
 def test_parse_iso_handles_z_naive_and_garbage():
     assert parse_iso("2026-04-29T13:12:42Z").tzinfo is not None
     # A naive value is assumed UTC so mixed lists still sort.
-    assert parse_iso("2026-04-29T13:12:42").tzinfo == timezone.utc
+    assert parse_iso("2026-04-29T13:12:42").tzinfo == UTC
     assert parse_iso("not-a-date") is None
     assert parse_iso(None) is None
 
@@ -265,8 +267,16 @@ def test_extract_shipment_info_with_matching_postcode_adds_receiver():
 
 
 def test_extract_shipment_info_handles_none_and_malformed():
-    assert extract_shipment_info(None) == {"sender": None, "weight": None, "receiver": None}
-    assert extract_shipment_info({}) == {"sender": None, "weight": None, "receiver": None}
+    assert extract_shipment_info(None) == {
+        "sender": None,
+        "weight": None,
+        "receiver": None,
+    }
+    assert extract_shipment_info({}) == {
+        "sender": None,
+        "weight": None,
+        "receiver": None,
+    }
     assert extract_shipment_info({"panels": "not-a-dict"}) == {
         "sender": None,
         "weight": None,
@@ -278,9 +288,7 @@ def test_extract_shipment_info_ignores_receiver_when_not_authorized():
     """``authorized: false`` must never surface panel_1 even if it somehow appears."""
     data = unauthorized_info_sample()
     data["authorized"] = False
-    data["panels"]["panel_1"] = {
-        "fields": {"recipient": {"value": "Should not leak"}}
-    }
+    data["panels"]["panel_1"] = {"fields": {"recipient": {"value": "Should not leak"}}}
     assert extract_shipment_info(data)["receiver"] is None
 
 
@@ -355,7 +363,8 @@ def test_capabilities_match_what_normalize_parcel_actually_returns():
     # (see coordinator.py) — not something normalize_parcel derives from the
     # tracking payload alone, so it needs an explicit ``info`` here.
     delivered = normalize_parcel(
-        delivered_sample(), info={"sender": "Example Sender", "weight": 4.55, "receiver": None}
+        delivered_sample(),
+        info={"sender": "Example Sender", "weight": 4.55, "receiver": None},
     )
     active = normalize_parcel(active_sample())
     pickup = normalize_parcel(pickup_sample())
@@ -457,7 +466,11 @@ def test_normalize_blank_fields_become_none():
 def test_normalize_removes_personal_raw_payload():
     raw = active_sample()
     safe = normalize_parcel(raw)["raw"]
-    assert "senderAddress" not in safe and "receiverAddress" not in safe and "actions" not in safe
+    assert (
+        "senderAddress" not in safe
+        and "receiverAddress" not in safe
+        and "actions" not in safe
+    )
 
 
 def test_normalize_falls_back_to_status_code_without_text():
@@ -540,7 +553,7 @@ def _entry(filter_type: str, amount: int) -> MockConfigEntry:
 
 
 def _delivered_pair() -> list[dict]:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     return [
         {"barcode": "RECENT", "delivered_at": (now - timedelta(days=1)).isoformat()},
         {"barcode": "OLD", "delivered_at": (now - timedelta(days=30)).isoformat()},

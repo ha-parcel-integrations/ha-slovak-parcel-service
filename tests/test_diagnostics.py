@@ -1,4 +1,5 @@
 """Tests for Slovak Parcel Service diagnostics."""
+
 from datetime import timedelta
 from unittest.mock import MagicMock
 

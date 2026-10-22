@@ -6,7 +6,6 @@ import logging
 import re
 from typing import Any
 
-import voluptuous as vol
 from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
@@ -15,6 +14,7 @@ from homeassistant.config_entries import (
 )
 from homeassistant.core import callback
 from homeassistant.helpers import selector
+import voluptuous as vol
 
 from .const import (
     CONF_DELIVERED_FILTER_AMOUNT,
@@ -217,12 +217,8 @@ class SlovakParcelServiceOptionsFlowHandler(OptionsFlow):
                 title="",
                 data={
                     CONF_PARCELS: _current_parcels(self.config_entry),
-                    CONF_POSTAL_CODE: self.config_entry.options.get(
-                        CONF_POSTAL_CODE
-                    ),
-                    CONF_DELIVERED_FILTER_TYPE: user_input[
-                        CONF_DELIVERED_FILTER_TYPE
-                    ],
+                    CONF_POSTAL_CODE: self.config_entry.options.get(CONF_POSTAL_CODE),
+                    CONF_DELIVERED_FILTER_TYPE: user_input[CONF_DELIVERED_FILTER_TYPE],
                     CONF_DELIVERED_FILTER_AMOUNT: int(
                         user_input[CONF_DELIVERED_FILTER_AMOUNT]
                     ),
