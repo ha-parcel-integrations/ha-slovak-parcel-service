@@ -174,6 +174,10 @@ def test_parse_local_time_handles_garbage_and_missing():
     assert parse_local_time("") is None
 
 
+def test_format_dimensions_rounds_the_text():
+    assert format_dimensions(27.9, 5.1, 27.9)["text"] == "28 x 5 x 28 cm"
+
+
 def test_format_dimensions_needs_all_three_axes():
     assert format_dimensions(30, 20, 10) == {
         "length": 30,
