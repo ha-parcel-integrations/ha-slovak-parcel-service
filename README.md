@@ -38,7 +38,7 @@ No account is needed: add the tracking numbers you want to follow.
 - Multiple hubs, one per delivery postcode, for tracking parcels sent to more than one address (e.g. home + work)
 - Per-parcel sensor with canonical status, carrier status text, sender, weight and an official tracking deep-link
 - Recipient name shown once your delivery postcode is set (confirms you're the addressee)
-- Summary sensors: incoming parcels, next delivery, recently delivered parcels
+- Summary sensors: incoming parcels, next delivery, en route to pickup point, awaiting pickup, recently delivered parcels
 - Read-only **Deliveries** calendar with the expected delivery windows
 - `slovak_parcel_service.track_parcel` / `slovak_parcel_service.untrack_parcel` services, so a dashboard button can add a parcel
 - Events + device triggers for no-code automations (parcel registered, status changed, delivered, delivery time changed)
@@ -121,6 +121,8 @@ Standard HA removal applies: **Settings → Devices & Services → Slovak Parcel
 | `sensor.slovak_parcel_service_incoming_parcels` | Number of active tracked parcels, full list under the `parcels` attribute |
 | `sensor.slovak_parcel_service_parcel_<code>` | One per tracked parcel; state is the canonical status, attributes carry the full normalised parcel |
 | `sensor.slovak_parcel_service_next_delivery` | Earliest expected delivery moment across all active parcels |
+| `sensor.slovak_parcel_service_en_route_to_pickup_point` | Active parcels heading for a parcel locker, not yet there |
+| `sensor.slovak_parcel_service_awaiting_pickup` | Parcels held in a parcel locker, ready to collect |
 | `sensor.slovak_parcel_service_delivered_parcels` | Recently delivered parcels (see the retention option) |
 | `calendar.slovak_parcel_service_deliveries` | Read-only calendar of expected deliveries, no extra API calls |
 | `sensor.slovak_parcel_service_last_successful_update` | Diagnostic: when Slovak Parcel Service was last polled successfully |
@@ -135,6 +137,7 @@ The `status` field is the carrier-agnostic enum shared by the whole integration 
 |---|---|
 | `registered` | Announced / received by Slovak Parcel Service |
 | `out_for_delivery` | With the courier today |
+| `at_pickup_point` | Held in a parcel locker, ready to collect |
 | `delivered` | Delivered |
 | `unknown` | Not yet scanned, or a status we have not mapped yet |
 

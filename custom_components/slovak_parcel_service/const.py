@@ -51,6 +51,10 @@ KNOWN_CAPABILITIES = frozenset(
 #   "history"            the include_history option is implemented and does something
 CAPABILITIES = frozenset({"weight", "url", "history"})
 
+# Fields not confirmed yet — the docs site shows them as "awaiting data".
+# Pending fields must still come back as ``None`` until confirmed.
+PENDING_CAPABILITIES: frozenset[str] = frozenset({"pickup_point"})
+
 # If this carrier ever grows a second backend with a genuinely different
 # payload shape (a country-specific API, not just a config option), replace
 # the single CAPABILITIES above with a CAPABILITIES_BY_VARIANT dict instead:

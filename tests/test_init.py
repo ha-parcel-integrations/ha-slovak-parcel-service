@@ -264,3 +264,32 @@ async def test_options_update_applies_live_without_reload(hass):
 
     incoming = hass.states.get("sensor.slovak_parcel_service_incoming_parcels")
     assert incoming.state == "2"
+
+
+async def test_pickup_sensors_register_and_survive_the_stale_sweep(hass):
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="84105",
+        options={CONF_PARCELS: [{CONF_TRACKING_CODE: ACTIVE_CODE}]},
+    )
+    entry.add_to_hass(hass)
+    registry = er.async_get(hass)
+    registry.async_get_or_create(
+        "sensor",
+        DOMAIN,
+        f"{entry.entry_id}_awaiting_pickup",
+        config_entry=entry,
+    )
+
+    with (
+        patch(
+            "custom_components.slovak_parcel_service.api.SlovakParcelServiceApiClient.async_get_parcel",
+            new=AsyncMock(return_value=_sample()),
+        ),
+        _no_info_patch(),
+    ):
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+
+    for key in ("awaiting_pickup", "en_route_to_pickup_point"):
+        assert registry.async_get_entity_id("sensor", DOMAIN, f"{entry.entry_id}_{key}")

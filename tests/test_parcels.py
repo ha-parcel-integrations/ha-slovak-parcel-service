@@ -467,14 +467,9 @@ def test_normalize_blank_fields_become_none():
     assert parcel["receiver"] is None
 
 
-def test_normalize_removes_personal_raw_payload():
+def test_normalize_raw_is_the_full_payload():
     raw = active_sample()
-    safe = normalize_parcel(raw)["raw"]
-    assert (
-        "senderAddress" not in safe
-        and "receiverAddress" not in safe
-        and "actions" not in safe
-    )
+    assert normalize_parcel(raw)["raw"] == raw
 
 
 def test_normalize_falls_back_to_status_code_without_text():

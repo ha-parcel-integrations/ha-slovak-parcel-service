@@ -17,9 +17,10 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.util import dt as dt_util
 
 from . import SlovakParcelServiceConfigEntry
-from .const import DOMAIN
+from .const import DOMAIN, ParcelStatus
 from .coordinator import SlovakParcelServiceCoordinator
 from .device import ATTRIBUTION, build_device_info
 from .parcels import parse_iso
@@ -53,6 +54,8 @@ async def async_setup_entry(
     non_parcel_unique_ids = {
         f"{entry_id}_incoming_parcels",
         f"{entry_id}_next_delivery",
+        f"{entry_id}_en_route_to_pickup_point",
+        f"{entry_id}_awaiting_pickup",
         f"{entry_id}_delivered_parcels",
         f"{entry_id}_last_update",
     }
@@ -76,6 +79,8 @@ async def async_setup_entry(
         for parcel in coordinator.data or []
     )
     entities.append(SlovakParcelServiceNextDeliverySensor(coordinator, entry))
+    entities.append(SlovakParcelServiceEnRouteToPickupPointSensor(coordinator, entry))
+    entities.append(SlovakParcelServiceAwaitingPickupSensor(coordinator, entry))
     entities.append(SlovakParcelServiceDeliveredParcelsSensor(coordinator, entry))
     entities.append(SlovakParcelServiceLastUpdateSensor(coordinator, entry))
 
@@ -212,6 +217,7 @@ class SlovakParcelServiceNextDeliverySensor(
 
     def _delivery_moments(self) -> list[tuple[datetime, dict]]:
         result: list[tuple[datetime, dict]] = []
+        now = dt_util.utcnow()
         for parcel in self.coordinator.data or []:
             moment = parse_iso(parcel.get("planned_from"))
             if moment is None:
@@ -219,6 +225,8 @@ class SlovakParcelServiceNextDeliverySensor(
                     _LOGGER.debug(
                         "Could not parse delivery moment: %s", parcel["planned_from"]
                     )
+                continue
+            if (parse_iso(parcel.get("planned_to")) or moment) < now:
                 continue
             result.append((moment, parcel))
         return result
@@ -241,6 +249,82 @@ class SlovakParcelServiceNextDeliverySensor(
             "sender": earliest.get("sender"),
             "receiver": earliest.get("receiver"),
         }
+
+
+class SlovakParcelServiceEnRouteToPickupPointSensor(
+    CoordinatorEntity[SlovakParcelServiceCoordinator], SensorEntity
+):
+    """Active parcels still in transit to a pickup point."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "en_route_to_pickup_point"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_attribution = ATTRIBUTION
+    _unrecorded_attributes = frozenset({"parcels"})
+
+    def __init__(
+        self, coordinator: SlovakParcelServiceCoordinator, entry: ConfigEntry
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{entry.entry_id}_en_route_to_pickup_point"
+        self._attr_device_info = build_device_info(entry)
+
+    def _parcels(self) -> list[dict]:
+        return [
+            p
+            for p in (self.coordinator.data or [])
+            if p.get("pickup")
+            and p.get("status")
+            not in (ParcelStatus.AT_PICKUP_POINT, ParcelStatus.RETURNING)
+        ]
+
+    @property
+    def native_value(self) -> int:
+        """Return the native value of the sensor."""
+        return len(self._parcels())
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return the extra state attributes."""
+        return {"parcels": self._parcels()}
+
+
+class SlovakParcelServiceAwaitingPickupSensor(
+    CoordinatorEntity[SlovakParcelServiceCoordinator], SensorEntity
+):
+    """Parcels that have arrived at a pickup point and are ready to collect."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "awaiting_pickup"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_attribution = ATTRIBUTION
+    _unrecorded_attributes = frozenset({"parcels"})
+
+    def __init__(
+        self, coordinator: SlovakParcelServiceCoordinator, entry: ConfigEntry
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{entry.entry_id}_awaiting_pickup"
+        self._attr_device_info = build_device_info(entry)
+
+    def _parcels(self) -> list[dict]:
+        return [
+            p
+            for p in (self.coordinator.data or [])
+            if p.get("status") == ParcelStatus.AT_PICKUP_POINT
+        ]
+
+    @property
+    def native_value(self) -> int:
+        """Return the native value of the sensor."""
+        return len(self._parcels())
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return the extra state attributes."""
+        return {"parcels": self._parcels()}
 
 
 class SlovakParcelServiceDeliveredParcelsSensor(

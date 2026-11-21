@@ -35,12 +35,14 @@ you act in one of these areas:
   summary+diagnostic sensors. Add a new non-parcel sensor's unique_id to the set.
 - **Per-parcel sensors are removed by the summary sensor** via
   `entity_registry.async_remove` (self-removal races and leaves ghosts).
-- **If this carrier can reach `ParcelStatus.AT_PICKUP_POINT` from a real raw
-  status/code**, it needs an `awaiting_pickup` sensor — see *Parcel contract*
-  in `CONVENTIONS.md`. Say "pickup point", not "ServicePoint"/"parcel
-  shop"/"locker", for the generic concept. `ha-dhl-nl`, `ha-dpd`, `ha-gls`,
-  `ha-inpost` are reference implementations; `slovak_parcel_service` here does not
-  demonstrate it yet.
+- **Pickup sensors exist (`awaiting_pickup`, `en_route_to_pickup_point`)**: the
+  carrier delivers to parcel lockers (balíkomat). `pickup` is derived with
+  `is_pickup(None, status, event_statuses)` (no structured route flag), so it
+  turns true once any event maps to `at_pickup_point`. `pickup_point` is always
+  `None` — no payload field names the locker — and sits in
+  `PENDING_CAPABILITIES`. Pending: the JSON `statusCode` of the locker hold has
+  not been captured, so `_EVENT_STATUS_MAP` has no `at_pickup_point` entry yet;
+  add it (and the locker-name field, if any) once a real parcel shows them.
 
 ## Carrier-specific notes
 
@@ -76,7 +78,7 @@ code's lifetime**, not every poll — see `coordinator._info_cache` — since
 they're static shipment attributes; a failed fetch is retried next cycle
 rather than treated as fatal, and a 429 on it still feeds the same
 `_consecutive_429` backoff as the tracking call, since both endpoints share
-one rate limit. `dimensions`, `planned_from`, `planned_to` and `pickup_point`
+one rate limit. `dimensions`, `planned_from` and `planned_to`
 are still always `None` — this route has no confirmed field for any of them.
 `const.CAPABILITIES` (`weight`, `url`, `history`) must stay in agreement with
 whichever of these fields actually come back non-null.

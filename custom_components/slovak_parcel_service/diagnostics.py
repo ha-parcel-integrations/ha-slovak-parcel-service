@@ -37,6 +37,10 @@ TO_REDACT = {
     "name",
     "driver",
     "signature",
+    # per-event fields of the tracking payload
+    "userName",
+    "packageNrs",
+    "info",
     # getShipmentInfo panel/rawData fields — only present once authorized by
     # a matching recipientzip, but redact unconditionally regardless
     "recipientPhone",
