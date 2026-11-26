@@ -41,6 +41,7 @@ No account is needed: add the tracking numbers you want to follow.
 - Summary sensors: incoming parcels, next delivery, en route to pickup point, awaiting pickup, recently delivered parcels
 - Read-only **Deliveries** calendar with the expected delivery windows
 - `slovak_parcel_service.track_parcel` / `slovak_parcel_service.untrack_parcel` services, so a dashboard button can add a parcel
+- A `contents` field on every parcel, set in your own words with the `slovak_parcel_service.update_contents` service or the `contents` field of `slovak_parcel_service.track_parcel`; it titles the calendar event and shows on the next-delivery sensor
 - Events + device triggers for no-code automations (parcel registered, status changed, delivered, delivery time changed)
 - Opt-in per-parcel status history
 - Manual refresh button and a diagnostic last-update sensor
@@ -160,8 +161,9 @@ Every payload is the full normalised parcel plus the hub's `device_id`. Events a
 
 | Service | Fields | Description |
 |---|---|---|
-| `slovak_parcel_service.track_parcel` | `tracking_code`, `postal_code` (optional) | Start tracking a parcel. `postal_code` picks the hub when more than one is set up; omit it with a single hub. |
+| `slovak_parcel_service.track_parcel` | `tracking_code`, `postal_code` (optional), `contents` (optional) | Start tracking a parcel, optionally noting what is in it. `postal_code` picks the hub when more than one is set up; omit it with a single hub. |
 | `slovak_parcel_service.untrack_parcel` | `tracking_code` | Stop tracking a parcel, on whichever hub(s) track it |
+| `slovak_parcel_service.update_contents` | `tracking_code`, `contents` (optional), `config_entry_id` (optional) | Set what is in a parcel, tracked or not; an empty `contents` clears it. It titles the calendar event and shows on the next-delivery sensor. It goes to every hub that follows the code, or to the one named by `config_entry_id`; with several hubs set up, a code no hub follows is refused unless you name the hub |
 
 ## Examples
 
